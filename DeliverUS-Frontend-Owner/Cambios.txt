@@ -1,10 +1,21 @@
 
+// COMPONENTS
+
+
     <ConfirmationModal 
       isVisible={restaurantToBePinned !== null}
       onCancel={() => setRestaurantToBePinned(null)}
       onConfirm={() => togglePin(null)}>
       <TextRegular>Are you sure you want to toggle pin this restaurant?</TextRegular>
     </ConfirmationModal>
+
+// RESTAURANT ENDPOINTS
+
+function pin (id) {
+  return patch(`/restaurants/${id}/togglePinned`)
+}
+
+// RESTAURANT SCREEN
 
         <Pressable onPress={() => {setRestaurantToBePinned(item)}}>
           <MaterialCommunityIcons
@@ -16,9 +27,6 @@
 
   const [restaurantToBePinned, setRestaurantToBePinned] = useState(null)
 
-function pin (id) {
-  return patch(`/restaurants/${id}/togglePinned`)
-}
 
   const togglePin = async (restaurant) => {
     try {
@@ -52,3 +60,14 @@ function pin (id) {
       })
     }
   }
+
+// CREATE RESTAURANT SCREEN
+
+<TextRegular>Pin restaurant?</TextRegular>
+<Switch
+trackColor={{ false: GlobalStyles.brandSecondary, true: GlobalStyles.brandPrimary }}
+thumbColor={values.pinned ? GlobalStyles.brandSecondary : '#f4f3f4'}
+value={values.pinned}
+style={styles.switch}
+onValueChange={value => setFieldValue(`pinned`, value)}
+/>
