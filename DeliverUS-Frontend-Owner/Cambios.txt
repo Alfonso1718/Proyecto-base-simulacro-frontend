@@ -1,0 +1,54 @@
+
+    <ConfirmationModal 
+      isVisible={restaurantToBePinned !== null}
+      onCancel={() => setRestaurantToBePinned(null)}
+      onConfirm={() => togglePin(null)}>
+      <TextRegular>Are you sure you want to toggle pin this restaurant?</TextRegular>
+    </ConfirmationModal>
+
+        <Pressable onPress={() => {setRestaurantToBePinned(item)}}>
+          <MaterialCommunityIcons
+            name = {item.pinnedAt? 'pin' : 'pin-outline'}
+            color = {GlobalStyles.brandSecondaryTap}
+            size={24}
+          />
+        </Pressable>
+
+  const [restaurantToBePinned, setRestaurantToBePinned] = useState(null)
+
+function pin (id) {
+  return patch(`/restaurants/${id}/togglePinned`)
+}
+
+  const togglePin = async (restaurant) => {
+    try {
+      await pin(restaurant.id)
+      await fetchRestaurants()
+      setRestaurantToBePinned(null)
+      if(restaurant.pinnedAt){
+        showMessage({
+          message: `Restaurant ${restaurant.name} succesfully unpinned`,
+          type: 'success',
+          style: GlobalStyles.flashStyle,
+          titleStyle: GlobalStyles.flashTextStyle
+        })
+      }else{
+        showMessage({
+          message: `Restaurant ${restaurant.name} succesfully pinned`,
+          type: 'success',
+          style: GlobalStyles.flashStyle,
+          titleStyle: GlobalStyles.flashTextStyle
+        })
+      }
+      navigation.navigate('RestaurantScreen', {dirty: true})
+    } catch (error) {
+      console.log(error)
+      setRestaurantToBePinned(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} could not be pinned.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
