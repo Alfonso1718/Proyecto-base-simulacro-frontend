@@ -132,6 +132,16 @@ export default function RestaurantsScreen ({ navigation, route }) {
   const fetchRestaurants = async () => {
     try {
       const fetchedRestaurants = await getAll()
+      const sortedFetchedRestaurants = fetchedRestaurants.sort((a, b) => {
+        if (a.pinnedAt && b.pinnedAt){
+          return new Date(b.pinnedAt) - new Date(a.pinnedAt)
+        }
+
+        if (a.pinnedAt) return -1
+        if (b.pinnedAt) return 1
+
+        return 0
+      })
       setRestaurants(fetchedRestaurants)
     } catch (error) {
       showMessage({
