@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, FlatList, Pressable, View } from 'react-native'
 
-import { getAll, remove } from '../../api/RestaurantEndpoints'
+import { getAll, remove, pin } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextSemiBold from '../../components/TextSemibold'
 import TextRegular from '../../components/TextRegular'
@@ -13,11 +13,14 @@ import { showMessage } from 'react-native-flash-message'
 import DeleteModal from '../../components/DeleteModal'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 import { API_BASE_URL } from '@env'
+import ConfirmationModal from '../../components/ConfirmationModal'
 
 export default function RestaurantsScreen ({ navigation, route }) {
   const [restaurants, setRestaurants] = useState([])
   const [restaurantToBeDeleted, setRestaurantToBeDeleted] = useState(null)
   const { loggedInUser } = useContext(AuthorizationContext)
+
+  const [restaurantToBePinned, setRestaurantToBePinned] = useState(null) // NO PETA
 
   useEffect(() => {
     if (loggedInUser) {
@@ -78,6 +81,15 @@ export default function RestaurantsScreen ({ navigation, route }) {
             </TextRegular>
           </View>
         </Pressable>
+
+        <Pressable onPress={() => {setRestaurantToBePinned(item)}}> {/* // NO PETA  */}
+          <MaterialCommunityIcons
+            name = {item.pinnedAt? 'pin' : 'pin-outline'}
+            color = {GlobalStyles.brandSecondaryTap}
+            size={24}
+          />
+        </Pressable>
+
         </View>
       </ImageCard>
     )
@@ -154,6 +166,39 @@ export default function RestaurantsScreen ({ navigation, route }) {
     }
   }
 
+  const togglePin = async (restaurant) => {
+    try {
+      await pin(restaurant.id)
+      await fetchRestaurants()
+      setRestaurantToBePinned(null)
+      if(restaurant.pinnedAt){
+        showMessage({
+          message: `Restaurant ${restaurant.name} succesfully unpinned`,
+          type: 'success',
+          style: GlobalStyles.flashStyle,
+          titleStyle: GlobalStyles.flashTextStyle
+        })
+      }else{
+        showMessage({
+          message: `Restaurant ${restaurant.name} succesfully pinned`,
+          type: 'success',
+          style: GlobalStyles.flashStyle,
+          titleStyle: GlobalStyles.flashTextStyle
+        })
+      }
+      navigation.navigate('RestaurantScreen', {dirty: true})
+    } catch (error) {
+      console.log(error)
+      setRestaurantToBePinned(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} could not be pinned.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
   return (
     <>
     <FlatList
@@ -171,6 +216,15 @@ export default function RestaurantsScreen ({ navigation, route }) {
         <TextRegular>The products of this restaurant will be deleted as well</TextRegular>
         <TextRegular>If the restaurant has orders, it cannot be deleted.</TextRegular>
     </DeleteModal>
+
+    {/* // NO PETA  */}
+    <ConfirmationModal 
+      isVisible={restaurantToBePinned !== null}
+      onCancel={() => setRestaurantToBePinned(null)}
+      onConfirm={() => togglePin(restaurantToBePinned)}>
+      <TextRegular>Are you sure you want to toggle pin this restaurant?</TextRegular>
+    </ConfirmationModal>
+
     </>
   )
 }
